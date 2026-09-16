@@ -1,0 +1,22 @@
+[project]
+name = "fastapi-db-cache-template"
+version = "0.1.0"
+description = "A guestbook demo showing FastAPI + Postgres + Valkey cache-aside caching"
+requires-python = ">=3.14"
+dependencies = [
+    "fastapi[standard]>=0.115",
+    "sqlalchemy[asyncio]>=2.0",
+    "asyncpg>=0.29",
+    "valkey>=6.0",
+    "jinja2>=3.1",
+    "pydantic-settings>=2.5",
+]
+
+[dependency-groups]
+dev = ["ruff>=0.7"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

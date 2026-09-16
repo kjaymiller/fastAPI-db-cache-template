@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Guestbooks</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 3rem auto; padding: 0 1rem; color: #1a1a1a; }
+    h1 { margin-bottom: 0.25rem; }
+    form { display: grid; gap: 0.5rem; margin: 1.5rem 0 2rem; }
+    input, textarea { font: inherit; padding: 0.5rem; border: 1px solid #ccc; border-radius: 6px; }
+    button { font: inherit; padding: 0.5rem; background: #1a1a1a; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
+    ul { list-style: none; padding: 0; }
+    li { padding: 0.75rem 0; border-bottom: 1px solid #eee; }
+    a { color: #1a1a1a; text-decoration: none; font-weight: 600; }
+    a:hover { text-decoration: underline; }
+    .meta { color: #888; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <h1>Guestbooks</h1>
+  <p class="meta">The guestbook list is cached for a few minutes.</p>
+
+  <form method="post" action="/guestbooks">
+    <input name="name" placeholder="New guestbook name" required maxlength="80">
+    <button type="submit">Create guestbook</button>
+  </form>
+
+  <ul>
+    {% for guestbook in guestbooks %}
+    <li><a href="/guestbooks/{{ guestbook.slug }}">{{ guestbook.name }}</a></li>
+    {% else %}
+    <li>No guestbooks yet — create the first one!</li>
+    {% endfor %}
+  </ul>
+</body>
+</html>

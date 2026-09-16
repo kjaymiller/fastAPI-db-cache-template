@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ guestbook.name }} · Guestbook</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 3rem auto; padding: 0 1rem; color: #1a1a1a; }
+    h1 { margin-bottom: 0.25rem; }
+    form { display: grid; gap: 0.5rem; margin: 1.5rem 0 2rem; }
+    input, textarea { font: inherit; padding: 0.5rem; border: 1px solid #ccc; border-radius: 6px; }
+    button { font: inherit; padding: 0.5rem; background: #1a1a1a; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
+    ul { list-style: none; padding: 0; }
+    li { padding: 0.75rem 0; border-bottom: 1px solid #eee; }
+    a.back { color: #888; font-size: 0.85rem; text-decoration: none; }
+    a.back:hover { text-decoration: underline; }
+    .meta { color: #888; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <a class="back" href="/">&larr; All guestbooks</a>
+  <h1>{{ guestbook.name }}</h1>
+  <p class="meta">Recent entries are served from cache and refresh every 15 minutes.</p>
+
+  <form method="post" action="/guestbooks/{{ guestbook.slug }}/entries">
+    <input name="name" placeholder="Your name" required maxlength="80">
+    <textarea name="message" placeholder="Leave a message" required maxlength="500" rows="3"></textarea>
+    <button type="submit">Sign the guestbook</button>
+  </form>
+
+  <ul>
+    {% for entry in entries %}
+    <li>
+      <strong>{{ entry.name }}</strong> <span class="meta">{{ entry.created_at }}</span>
+      <p>{{ entry.message }}</p>
+    </li>
+    {% else %}
+    <li>No entries yet — be the first!</li>
+    {% endfor %}
+  </ul>
+</body>
+</html>
