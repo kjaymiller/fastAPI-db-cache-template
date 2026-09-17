@@ -29,23 +29,10 @@ def slugify(name: str) -> str:
 
 
 class Settings(BaseSettings):
-    postgres_user: str
-    postgres_password: str
-    postgres_db: str
-    postgres_host: str = "localhost"
-    postgres_port: int = 5432
-
-    valkey_host: str = "localhost"
-    valkey_port: int = 6379
+    database_url: str
+    valkey_url: str
 
     cache_ttl_seconds: int = 900
-
-    @property
-    def database_url(self) -> str:
-        return (
-            f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}"
-            f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
-        )
 
 
 class Base(AsyncAttrs, DeclarativeBase):
@@ -78,7 +65,7 @@ class Entry(Base):
 settings = Settings()
 engine = create_async_engine(settings.database_url)
 Session = async_sessionmaker(engine, expire_on_commit=False)
-cache = Valkey(host=settings.valkey_host, port=settings.valkey_port, decode_responses=True)
+cache = Valkey.from_url(settings.valkey_url, decode_responses=True)
 templates = Jinja2Templates(directory="templates")
 
 
