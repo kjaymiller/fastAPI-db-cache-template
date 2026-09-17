@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import base64
 import json
+import os
 import re
+import ssl
 from contextlib import asynccontextmanager
 from datetime import datetime
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from fastapi import FastAPI, Form, HTTPException, Request
 from fastapi.responses import RedirectResponse
@@ -39,10 +43,16 @@ class Settings(BaseSettings):
     @classmethod
     def use_asyncpg(cls, value: str) -> str:
         if value.startswith("postgres://"):
-            return "postgresql+asyncpg://" + value.removeprefix("postgres://")
-        if value.startswith("postgresql://"):
-            return "postgresql+asyncpg://" + value.removeprefix("postgresql://")
-        return value
+            value = "postgresql+asyncpg://" + value.removeprefix("postgres://")
+        elif value.startswith("postgresql://"):
+            value = "postgresql+asyncpg://" + value.removeprefix("postgresql://")
+
+        # asyncpg's connect() has no `sslmode` kwarg, so a `sslmode=require` query
+        # param (as set by Aiven-provisioned service URIs) makes connect() blow up.
+        # TLS is instead configured explicitly via connect_args below.
+        parts = urlsplit(value)
+        query = urlencode([(k, v) for k, v in parse_qsl(parts.query) if k != "sslmode"])
+        return urlunsplit(parts._replace(query=query))
 
 
 class Base(AsyncAttrs, DeclarativeBase):
@@ -73,7 +83,13 @@ class Entry(Base):
 
 
 settings = Settings()
-engine = create_async_engine(settings.database_url)
+
+connect_args = {}
+if project_ca_cert := os.getenv("PROJECT_CA_CERT"):
+    ssl_context = ssl.create_default_context(cadata=base64.b64decode(project_ca_cert).decode())
+    connect_args["ssl"] = ssl_context
+
+engine = create_async_engine(settings.database_url, connect_args=connect_args)
 Session = async_sessionmaker(engine, expire_on_commit=False)
 cache = Valkey.from_url(settings.valkey_url, decode_responses=True)
 templates = Jinja2Templates(directory="templates")
