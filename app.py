@@ -8,6 +8,7 @@ from datetime import datetime
 from fastapi import FastAPI, Form, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 from sqlalchemy import DateTime, ForeignKey, String, select
 from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine
@@ -33,6 +34,15 @@ class Settings(BaseSettings):
     valkey_url: str
 
     cache_ttl_seconds: int = 900
+
+    @field_validator("database_url")
+    @classmethod
+    def use_asyncpg(cls, value: str) -> str:
+        if value.startswith("postgres://"):
+            return "postgresql+asyncpg://" + value.removeprefix("postgres://")
+        if value.startswith("postgresql://"):
+            return "postgresql+asyncpg://" + value.removeprefix("postgresql://")
+        return value
 
 
 class Base(AsyncAttrs, DeclarativeBase):
