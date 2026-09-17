@@ -67,6 +67,10 @@ docker compose up --build
 
 The app is served at `http://localhost:8000`. Postgres and Valkey run as sidecar services with healthchecks gating app startup; tables are created automatically on startup via `Base.metadata.create_all`.
 
+### Deploying with a managed Postgres (e.g. Aiven)
+
+`asyncpg`'s `connect()` has no `sslmode` kwarg, so a `DATABASE_URL` containing `sslmode=require` (as managed providers like Aiven inject) makes the app crash on startup. `app.py` strips `sslmode` from the URL and configures TLS explicitly instead, using a CA cert from the `PROJECT_CA_CERT` env var (base64-encoded PEM) when present. No action needed if `PROJECT_CA_CERT` isn't set — the app falls back to a plain connection, as in local Docker Compose.
+
 ## Development
 
 ```bash
